@@ -125,6 +125,8 @@ if st.session_state.get("_process"):
 
 if st.session_state.step == 3:
     player = cookieManager.get("player")
+    if player == None:
+        player = st.session_state._submittedPlayer
     try:
       balance = balanceData[player]
     except:
