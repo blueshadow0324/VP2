@@ -1,3 +1,5 @@
+from tkinter.tix import BALLOON
+
 import streamlit as st
 import json
 import random
@@ -12,6 +14,9 @@ try:
         st.session_state.loggedIn = True
 except:
     print("")
+
+with open("jackpot.dat", "r") as f:
+    pot = f.read()
 
 st.markdown("""
 <style>
@@ -49,6 +54,20 @@ def roll(amount, player, tryNumber):
     with open("balance.json", "w") as file:
         json.dump(balanceData, file, indent=4)
 
+def jackpot_bet():
+    random_int = random.randint(1, 100)
+    if balanceData[player] > 10:
+        if random_int == 1:
+            st.dialog(f"You won the pot of {pot}!")
+        else:
+            balanceData[player] -= 10
+            with open("balance.json", "w") as file:
+                json.dump(balanceData, file, indent=4)
+            pot += 10
+            with open("jackpot.dat", "w") as file:
+                file.write(pot)
+            st.warning(f"Sorry you didnt not win! The number was {random_int}")
+
 if not st.session_state.loggedIn == False:
     balance = balanceData[player]
     st.title("Welcome to the casino!")
@@ -59,10 +78,14 @@ if not st.session_state.loggedIn == False:
         guess = st.slider("Input the guessing number:", 1, 6)
         amount = st.number_input("Enter amount to gamble:")
         st.button("Gamble!", on_click=lambda: roll(player=player, amount=amount, tryNumber=guess))
-    elif st.session_state.casinoState == "jackpot":
-        st.text("Jackpot")
+    elif st.session_state.casinoState == "jackpot.json":
+        st.text("You gamble 10 per time and each time you have a 1 in 100 change of wining the whole pot! If you get 1!")
+        st.text(f"The current pot is {pot}")
+        st.button("Gamble 10!", on_click=jackpot_bet)
+
+
     else:
         st.button("Dice", on_click=lambda: hideButton("dice"))
-        st.button("Jackpot", on_click=lambda: hideButton("jackpot"))
+        st.button("Jackpot", on_click=lambda: hideButton("jackpot.json"))
 else:
     st.warning("You're not logged in, please log in first!")
